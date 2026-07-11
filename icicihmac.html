@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ICICI BANK Developer Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAF9F7;
+    --card:#FFFFFF;
+    --ink:#241B1B;
+    --ink-soft:#6B5F5C;
+    --line:#EBE3DF;
+    --line-strong:#DDD0CA;
+    --maroon:#8C2B28;
+    --maroon-deep:#6E1F1D;
+    --orange:#E07A2E;
+    --orange-soft:rgba(224,122,46,0.12);
+    --teal:#1F7A5C;
+    --teal-soft:rgba(31,122,92,0.1);
+    --brick:#B23A2E;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px 16px;
+  }
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  .display{font-family:'Sora', sans-serif;}
+  .app{
+    width:100%;
+    max-width:1000px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    overflow:hidden;
+    box-shadow:0 30px 60px -25px rgba(140,43,40,0.18);
+  }
+  .topbar{
+    background:linear-gradient(120deg, var(--maroon) 0%, var(--maroon-deep) 55%, #4A1513 100%);
+    padding:20px 32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    position:relative;
+    overflow:hidden;
+  }
+  .topbar::after{
+    content:'';
+    position:absolute; right:-40px; top:-60px; width:220px; height:220px;
+    background:radial-gradient(circle, rgba(224,122,46,0.35), transparent 70%);
+  }
+  .brand{display:flex; align-items:center; gap:12px; position:relative; z-index:1;}
+  .brand .mark{
+    width:38px; height:38px; border-radius:9px;
+    background:linear-gradient(135deg, var(--orange), #F0A050);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Sora', sans-serif; font-weight:800; font-size:17px; color:var(--maroon-deep);
+    flex-shrink:0; transform:rotate(-4deg);
+  }
+  .brand .name{font-family:'Sora', sans-serif; font-weight:700; font-size:18px; color:#fff; letter-spacing:0.1px;}
+  .brand .sub{font-size:10.5px; color:rgba(255,255,255,0.65); letter-spacing:0.7px; text-transform:uppercase; margin-top:1px;}
+  .topbar-steps{display:flex; gap:26px; position:relative; z-index:1;}
+  .tstep{display:flex; align-items:center; gap:8px; font-size:12.5px; color:rgba(255,255,255,0.45); font-weight:500;}
+  .tstep.active{color:#fff;}
+  .tstep.done{color:#F0C09A;}
+  .tstep-dot{
+    width:20px; height:20px; border-radius:50%; border:1.5px solid rgba(255,255,255,0.3);
+    display:flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:700;
+    flex-shrink:0; font-family:'IBM Plex Mono', monospace;
+  }
+  .tstep.active .tstep-dot{border-color:var(--orange); background:var(--orange); color:var(--maroon-deep);}
+  .tstep.done .tstep-dot{border-color:#F0C09A; color:#F0C09A;}
+  @media (max-width:700px){
+    .topbar{flex-direction:column; align-items:flex-start; gap:16px; padding:20px 22px;}
+    .topbar-steps{gap:16px;}
+    .tstep span:last-child{display:none;}
+  }
+
+  .main{padding:44px 48px; display:flex; flex-direction:column; min-height:560px;}
+  @media (max-width:700px){.main{padding:30px 24px;}}
+  .eyebrow{font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:1.6px; text-transform:uppercase; color:var(--orange); font-weight:600; margin-bottom:12px;}
+  h1{font-family:'Sora', sans-serif; font-size:27px; font-weight:700; margin-bottom:10px; letter-spacing:-0.3px; color:var(--ink);}
+  .desc{color:var(--ink-soft); font-size:14.5px; line-height:1.6; margin-bottom:26px; max-width:520px;}
+  .field{margin-bottom:16px;}
+  label{display:block; font-size:12.5px; color:var(--ink-soft); margin-bottom:7px; font-weight:600;}
+  input[type=text], input[type=password], input[type=number]{
+    width:100%; background:var(--bg); border:1.5px solid var(--line-strong);
+    color:var(--ink); padding:12px 14px; border-radius:7px; font-size:14px;
+    font-family:'Inter', sans-serif; outline:none; transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  input:focus{border-color:var(--orange); box-shadow:0 0 0 3px rgba(224,122,46,0.15);}
+  .ifsc-input, .acct-input{font-family:'IBM Plex Mono', monospace; letter-spacing:0.8px;}
+  .ifsc-input{text-transform:uppercase;}
+  .btn{
+    background:linear-gradient(120deg, var(--maroon), var(--maroon-deep)); color:#fff; border:none; padding:12px 24px; border-radius:7px;
+    font-weight:700; font-size:13.5px; cursor:pointer; transition:filter .2s ease, transform .1s ease;
+    font-family:'Inter', sans-serif; letter-spacing:0.2px;
+  }
+  .btn:hover{filter:brightness(1.1);}
+  .btn:active{transform:scale(0.98);}
+  .btn:disabled{background:var(--line-strong); color:#A99C97; cursor:not-allowed;}
+  .btn-ghost{background:transparent; border:1.5px solid var(--line-strong); color:var(--ink-soft);}
+  .btn-ghost:hover{border-color:var(--maroon); color:var(--maroon); background:transparent;}
+  .row{display:flex; gap:12px; margin-top:8px; flex-wrap:wrap;}
+  .error{color:var(--brick); font-size:12.5px; margin-top:6px; display:none;}
+  .hint{color:var(--ink-soft); opacity:0.8; font-size:12px; margin-top:6px;}
+
+  .target-bar{background:var(--bg); border:1px solid var(--line); border-radius:9px; padding:18px 20px; margin-bottom:20px;}
+  .target-row{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px; flex-wrap:wrap; gap:8px;}
+  .target-row .label{font-size:13px; color:var(--ink-soft); font-weight:600;}
+  .target-amt{display:flex; align-items:center; gap:6px;}
+  .target-amt input{width:130px; padding:8px 10px; font-family:'IBM Plex Mono', monospace; font-size:13px;}
+  .progress-track{height:7px; background:var(--line-strong); border-radius:4px; overflow:hidden;}
+  .progress-fill{height:100%; background:linear-gradient(90deg, var(--maroon), var(--orange)); border-radius:4px; transition:width .4s ease; width:0%;}
+  .progress-nums{display:flex; justify-content:space-between; font-size:12px; color:var(--ink-soft); margin-top:9px; font-family:'IBM Plex Mono', monospace;}
+
+  .drop{
+    border:1.5px dashed var(--line-strong); border-radius:9px; padding:28px 20px; text-align:center;
+    cursor:pointer; transition:border-color .2s ease, background .2s ease; background:var(--bg);
+  }
+  .drop:hover{border-color:var(--orange); background:var(--orange-soft);}
+  .drop svg{margin-bottom:8px; opacity:0.55;}
+  .drop .primary{font-size:13.5px; font-weight:600; margin-bottom:4px; color:var(--ink);}
+  .drop .secondary{font-size:12px; color:var(--ink-soft);}
+
+  .screenshot-list{display:flex; flex-direction:column; gap:10px; margin-top:16px;}
+  .ss-item{
+    display:flex; align-items:center; gap:12px; background:var(--bg);
+    border:1px solid var(--line); border-radius:9px; padding:10px 12px;
+  }
+  .ss-item img{width:52px; height:52px; object-fit:cover; border-radius:6px; background:var(--line); flex-shrink:0; border:1px solid var(--line-strong);}
+  .ss-info{flex:1; min-width:0;}
+  .ss-info .fname{font-size:12.5px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500;}
+  .ss-info .ftime{font-size:11px; color:var(--ink-soft); margin-top:2px;}
+  .ss-amt{display:flex; align-items:center; gap:6px;}
+  .ss-amt input{width:100px; padding:8px 10px; font-size:12.5px; font-family:'IBM Plex Mono', monospace;}
+  .ss-remove{background:none; border:none; color:var(--brick); font-size:12px; cursor:pointer; font-family:inherit; padding:4px; font-weight:600;}
+  .count-hint{font-size:12px; color:var(--ink-soft); margin-top:10px;}
+
+  .key-card{
+    background:var(--bg); border:1.5px solid var(--line-strong); border-radius:10px; padding:24px;
+    margin-top:8px; position:relative; overflow:hidden;
+  }
+  .key-card::before{
+    content:''; position:absolute; top:0; left:0; right:0; height:4px;
+    background:linear-gradient(90deg, var(--maroon), var(--orange));
+  }
+  .key-display{
+    font-family:'IBM Plex Mono', monospace; font-size:13px; color:var(--teal);
+    background:var(--card); border:1px solid var(--line); border-radius:7px;
+    padding:16px; word-break:break-all; line-height:1.7; min-height:52px; margin-top:14px;
+  }
+  .key-display .cursor{display:inline-block; width:7px; height:15px; background:var(--orange); vertical-align:middle; animation:blink 1s step-end infinite;}
+  @keyframes blink{50%{opacity:0;}}
+  .key-actions{display:flex; gap:10px; margin-top:14px; align-items:center;}
+  .copy-fb{font-size:12px; color:var(--teal); opacity:0; transition:opacity .2s ease; font-weight:600;}
+  .copy-fb.show{opacity:1;}
+
+  .status-block{
+    display:flex; align-items:center; gap:18px; margin-top:22px;
+    background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:18px 20px;
+  }
+  .ring-wrap{position:relative; width:74px; height:74px; flex-shrink:0;}
+  .ring-wrap svg{transform:rotate(-90deg);}
+  .ring-bg{stroke:var(--line-strong); fill:none; stroke-width:6;}
+  .ring-fg{stroke:var(--orange); fill:none; stroke-width:6; stroke-linecap:round; transition:stroke-dashoffset 1s linear;}
+  .ring-fg.active{stroke:var(--teal);}
+  .ring-label{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; font-family:'IBM Plex Mono', monospace; color:var(--maroon); text-align:center; line-height:1.1;}
+  .ring-label.active{color:var(--teal);}
+  .status-text .title{font-family:'Inter',sans-serif; font-size:13.5px; font-weight:700; margin-bottom:4px; display:flex; align-items:center; gap:8px; color:var(--ink);}
+  .status-text .sub{font-size:12px; color:var(--ink-soft);}
+  .status-text .countdown{font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--ink-soft); margin-top:4px;}
+  .pill{font-size:10px; font-weight:700; padding:3px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px;}
+  .pill.pending{background:var(--orange-soft); color:var(--orange);}
+  .pill.active{background:var(--teal-soft); color:var(--teal);}
+
+  .history-panel{margin-top:22px; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:18px 20px;}
+  .history-panel h3{font-family:'Sora', sans-serif; font-size:14px; font-weight:700; margin-bottom:12px; color:var(--ink);}
+  .history-row{display:flex; justify-content:space-between; align-items:center; padding:9px 0; font-size:12.5px;}
+  .history-row + .history-row{border-top:1px solid var(--line);}
+  .history-row .h-name{color:var(--ink); font-weight:500;}
+  .history-row .h-time{color:var(--ink-soft); font-size:11.5px; margin-top:2px;}
+  .history-row .h-amt{font-family:'IBM Plex Mono', monospace; color:var(--teal); font-weight:700;}
+  .history-total{display:flex; justify-content:space-between; padding-top:12px; margin-top:6px; border-top:1.5px solid var(--line-strong); font-size:13px; font-weight:700; color:var(--ink);}
+
+  .footer-note{margin-top:auto; padding-top:26px; font-size:11.5px; color:var(--ink-soft); opacity:0.85; line-height:1.6;}
+  .login-box{max-width:340px;}
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:16px; max-width:460px;}
+  @media (max-width:480px){.grid-2{grid-template-columns:1fr;}}
+
+  .mode-toggle{display:flex; gap:8px; margin-bottom:24px; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:4px; max-width:460px;}
+  .mode-btn{
+    flex:1; text-align:center; padding:10px 14px; border-radius:6px; border:none; background:transparent;
+    font-family:'Inter', sans-serif; font-size:13px; font-weight:600; color:var(--ink-soft); cursor:pointer;
+    transition:background .2s ease, color .2s ease;
+  }
+  .mode-btn.selected{background:var(--card); color:var(--maroon); box-shadow:0 1px 3px rgba(0,0,0,0.08);}
+  .mode-panel{display:none;}
+  .mode-panel.visible{display:block;}
+  .mode-note{font-size:12px; color:var(--ink-soft); margin-bottom:18px; background:var(--orange-soft); border-radius:7px; padding:10px 14px; max-width:460px;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark" style="background:#fff;transform:none;padding:3px;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/1/12/ICICI_Bank_Logo.svg" alt="ICICI Bank" style="width:100%;height:100%;object-fit:contain;">
+      </div>
+      <div>
+        <div class="name">ICICI BANK</div>
+        <div class="sub">Dev Console</div>
+      </div>
+    </div>
+    <div class="topbar-steps">
+      <div class="tstep active" id="step-ind-1"><div class="tstep-dot">1</div><span>Sign in</span></div>
+      <div class="tstep" id="step-ind-2"><div class="tstep-dot">2</div><span>Verify payment</span></div>
+      <div class="tstep" id="step-ind-3"><div class="tstep-dot">3</div><span>Generate key</span></div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- STEP 1: LOGIN -->
+    <div id="screen-1">
+      <div class="eyebrow">Step 1 of 3</div>
+      <h1 class="display">Sign in to your account</h1>
+      <div class="desc">Access your ICICI BANK developer workspace to manage HMAC signing keys.</div>
+      <div class="login-box">
+        <div class="field">
+          <label>Email</label>
+          <input type="text" id="login-email" placeholder="you@yourcompany.com">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="login-pass" placeholder="••••••••">
+        </div>
+        <div class="error" id="login-error">Enter an email and password to continue.</div>
+        <button class="btn" style="width:100%; margin-top:8px;" onclick="doLogin()">Sign in</button>
+        <div class="hint">Demo workspace — any email and password will sign you in.</div>
+      </div>
+    </div>
+
+    <!-- STEP 2: PAYMENT VERIFY -->
+    <div id="screen-2" style="display:none;">
+      <div class="eyebrow">Step 2 of 3</div>
+      <h1 class="display">Verify setup payment</h1>
+      <div class="desc">Upload up to 10 payment screenshots. Enter the confirmed amount for each — this is a manual reviewer entry, not automatic screenshot reading. Once the total meets your target, you can continue.</div>
+
+      <div class="target-bar">
+        <div class="target-row">
+          <span class="label">Target amount</span>
+          <div class="target-amt">
+            <span class="mono" style="color:var(--ink-soft); font-size:13px;">₹</span>
+            <input type="number" id="target-input" value="350000" onchange="renderProgress()">
+          </div>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+        <div class="progress-nums">
+          <span id="progress-current">₹0</span>
+          <span id="progress-target">of ₹3,50,000</span>
+        </div>
+      </div>
+
+      <div id="drop-zone" class="drop" onclick="document.getElementById('file-input').click()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8C2B28" stroke-width="1.6"><path d="M12 16V4M12 4L7 9M12 4l5 5"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+        <div class="primary">Click to upload screenshots</div>
+        <div class="secondary" id="drop-secondary">PNG or JPG, up to 10 files</div>
+      </div>
+      <input type="file" id="file-input" accept="image/*" multiple style="display:none" onchange="handleFiles(event)">
+
+      <div class="screenshot-list" id="screenshot-list"></div>
+      <div class="count-hint" id="count-hint">0 of 10 screenshots uploaded</div>
+
+      <div class="row">
+        <button class="btn-ghost btn" onclick="goTo(1)">Back</button>
+        <button class="btn" id="verify-continue" onclick="confirmPayment()" disabled>Continue to key generation</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: GENERATE KEY -->
+    <div id="screen-3" style="display:none;">
+      <div class="eyebrow">Step 3 of 3</div>
+      <h1 class="display">Generate signing key</h1>
+      <div class="desc">Choose a key type: a master key for general API access, or an account-linked key tied to a specific settlement account.</div>
+
+      <div class="mode-toggle">
+        <button class="mode-btn selected" id="mode-btn-master" onclick="setKeyMode('master')">Master key</button>
+        <button class="mode-btn" id="mode-btn-account" onclick="setKeyMode('account')">Account-linked key</button>
+      </div>
+
+      <div class="mode-panel visible" id="panel-master">
+        <div class="mode-note">A master key signs requests for your whole ICICI BANK integration. It isn't tied to a bank account or IFSC — treat it as your highest-privilege credential.</div>
+        <button class="btn" id="gen-btn-master" onclick="generateKey('master')">Generate master HMAC key</button>
+      </div>
+
+      <div class="mode-panel" id="panel-account">
+        <div class="grid-2">
+          <div class="field">
+            <label>Account number</label>
+            <input type="text" class="acct-input" id="acct-input" placeholder="000000000000" maxlength="20">
+          </div>
+          <div class="field">
+            <label>Account IFSC code</label>
+            <input type="text" class="ifsc-input" id="ifsc-input" placeholder="ABCD0123456" maxlength="11">
+          </div>
+        </div>
+        <div class="error" id="ifsc-error">Enter a valid account number and 11-character IFSC code.</div>
+        <button class="btn" id="gen-btn-account" onclick="generateKey('account')">Generate account-linked key</button>
+      </div>
+
+      <div class="key-card" id="key-card" style="display:none;">
+        <label>Your signing key</label>
+        <div class="key-display mono" id="key-display"></div>
+        <div class="key-actions">
+          <button class="btn" onclick="copyKey()">Copy key</button>
+          <button class="btn-ghost btn" onclick="resetKeyStep()">Regenerate</button>
+          <span class="copy-fb" id="copy-fb">Copied ✓</span>
+        </div>
+      </div>
+
+      <div class="status-block" id="status-block" style="display:none;">
+        <div class="ring-wrap">
+          <svg width="74" height="74">
+            <circle class="ring-bg" cx="37" cy="37" r="31"></circle>
+            <circle class="ring-fg" id="ring-fg" cx="37" cy="37" r="31" stroke-dasharray="195" stroke-dashoffset="0"></circle>
+          </svg>
+          <div class="ring-label" id="ring-label">24h</div>
+        </div>
+        <div class="status-text">
+          <div class="title">Key status <span class="pill pending" id="status-pill">Pending activation</span></div>
+          <div class="sub" id="status-sub">Activates 24 hours after generation, then valid for 365 days.</div>
+          <div class="countdown" id="countdown-text">—</div>
+        </div>
+      </div>
+
+      <div class="history-panel" id="history-panel" style="display:none;">
+        <h3>Payment history</h3>
+        <div id="history-rows"></div>
+        <div class="history-total">
+          <span>Total verified</span>
+          <span id="history-total-amt" class="mono" style="color:var(--teal);">₹0</span>
+        </div>
+      </div>
+
+      <div class="footer-note">This key authenticates requests to your own ICICI BANK API integration. It is not issued by, endorsed by, or affiliated with any bank. Store it like a password — anyone with this key can sign requests on your behalf.</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let screenshots = [];
+let activationTimestamp = null;
+let expiryTimestamp = null;
+let countdownInterval = null;
+let keyActive = false;
+
+function goTo(step){
+  for(let i=1;i<=3;i++){
+    document.getElementById('screen-'+i).style.display = (i===step) ? 'block' : 'none';
+    const ind = document.getElementById('step-ind-'+i);
+    ind.classList.remove('active','done');
+    if(i < step) ind.classList.add('done');
+    if(i === step) ind.classList.add('active');
+  }
+}
+
+function doLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value.trim();
+  const err = document.getElementById('login-error');
+  if(!email || !pass){ err.style.display = 'block'; return; }
+  err.style.display = 'none';
+  goTo(2);
+}
+
+function fmtINR(n){ return '₹' + Number(n || 0).toLocaleString('en-IN'); }
+
+function handleFiles(e){
+  const files = Array.from(e.target.files);
+  const remaining = 10 - screenshots.length;
+  const toAdd = files.slice(0, remaining);
+  toAdd.forEach(file => {
+    const id = 'ss-' + Date.now() + '-' + Math.random().toString(36).slice(2,7);
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      screenshots.push({id, file, dataUrl: ev.target.result, amount: 0, time: new Date()});
+      renderScreenshots();
+    };
+    reader.readAsDataURL(file);
+  });
+  document.getElementById('file-input').value = '';
+  if(files.length > remaining){
+    document.getElementById('drop-secondary').textContent = 'Limit reached — only ' + remaining + ' more file(s) could be added';
+  }
+}
+
+function renderScreenshots(){
+  const list = document.getElementById('screenshot-list');
+  list.innerHTML = '';
+  screenshots.forEach(ss => {
+    const row = document.createElement('div');
+    row.className = 'ss-item';
+    row.innerHTML = `
+      <img src="${ss.dataUrl}" alt="Screenshot">
+      <div class="ss-info">
+        <div class="fname">${ss.file.name}</div>
+        <div class="ftime">${ss.time.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'})}</div>
+      </div>
+      <div class="ss-amt">
+        <span class="mono" style="color:var(--ink-soft); font-size:12.5px;">₹</span>
+        <input type="number" placeholder="0" value="${ss.amount || ''}" onchange="updateAmount('${ss.id}', this.value)">
+      </div>
+      <button class="ss-remove" onclick="removeScreenshot('${ss.id}')">Remove</button>
+    `;
+    list.appendChild(row);
+  });
+  document.getElementById('count-hint').textContent = screenshots.length + ' of 10 screenshots uploaded';
+  document.getElementById('drop-zone').style.display = screenshots.length >= 10 ? 'none' : 'block';
+  renderProgress();
+}
+
+function updateAmount(id, val){
+  const ss = screenshots.find(s => s.id === id);
+  if(ss) ss.amount = parseFloat(val) || 0;
+  renderProgress();
+}
+
+function removeScreenshot(id){
+  screenshots = screenshots.filter(s => s.id !== id);
+  renderScreenshots();
+}
+
+function renderProgress(){
+  const target = parseFloat(document.getElementById('target-input').value) || 0;
+  const total = screenshots.reduce((sum, s) => sum + (s.amount || 0), 0);
+  const pct = target > 0 ? Math.min(100, (total / target) * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-current').textContent = fmtINR(total);
+  document.getElementById('progress-target').textContent = 'of ' + fmtINR(target);
+  document.getElementById('verify-continue').disabled = !(target > 0 && total >= target);
+}
+
+function confirmPayment(){
+  goTo(3);
+  renderHistory();
+}
+
+function renderHistory(){
+  const panel = document.getElementById('history-panel');
+  const rows = document.getElementById('history-rows');
+  if(screenshots.length === 0){ panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+  rows.innerHTML = '';
+  let total = 0;
+  screenshots.forEach(ss => {
+    total += ss.amount || 0;
+    const row = document.createElement('div');
+    row.className = 'history-row';
+    row.innerHTML = `
+      <div>
+        <div class="h-name">${ss.file.name}</div>
+        <div class="h-time">${ss.time.toLocaleString('en-IN')}</div>
+      </div>
+      <div class="h-amt">${fmtINR(ss.amount)}</div>
+    `;
+    rows.appendChild(row);
+  });
+  document.getElementById('history-total-amt').textContent = fmtINR(total);
+}
+
+let currentKeyMode = 'master';
+
+function setKeyMode(mode){
+  currentKeyMode = mode;
+  document.getElementById('mode-btn-master').classList.toggle('selected', mode === 'master');
+  document.getElementById('mode-btn-account').classList.toggle('selected', mode === 'account');
+  document.getElementById('panel-master').classList.toggle('visible', mode === 'master');
+  document.getElementById('panel-account').classList.toggle('visible', mode === 'account');
+  resetKeyStep();
+}
+
+function generateKey(mode){
+  let prefix = 'revs_hmac_';
+
+  if(mode === 'account'){
+    const acct = document.getElementById('acct-input').value.trim();
+    const ifsc = document.getElementById('ifsc-input').value.trim().toUpperCase();
+    const err = document.getElementById('ifsc-error');
+    const ifscPattern = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+    if(!acct || !ifscPattern.test(ifsc)){ err.style.display = 'block'; return; }
+    err.style.display = 'none';
+  } else {
+    prefix = 'revs_hmac_master_';
+  }
+
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const bytes = new Uint8Array(64);
+  crypto.getRandomValues(bytes);
+  let suffix = '';
+  for(let i=0;i<64;i++){ suffix += chars[bytes[i] % chars.length]; }
+  const fullKey = prefix + suffix;
+
+  const card = document.getElementById('key-card');
+  const display = document.getElementById('key-display');
+  card.style.display = 'block';
+  display.innerHTML = '<span class="cursor"></span>';
+
+  let i = 0;
+  function typeChar(){
+    if(i < fullKey.length){
+      display.innerHTML = fullKey.slice(0, i+1) + '<span class="cursor"></span>';
+      i++;
+      setTimeout(typeChar, 12);
+    } else {
+      display.innerHTML = fullKey;
+      startActivation();
+    }
+  }
+  typeChar();
+
+  document.getElementById('gen-btn-master').style.display = mode === 'master' ? 'none' : 'inline-block';
+  document.getElementById('gen-btn-account').style.display = mode === 'account' ? 'none' : 'inline-block';
+  window._currentKey = fullKey;
+}
+
+function resetKeyStep(){
+  document.getElementById('key-card').style.display = 'none';
+  document.getElementById('status-block').style.display = 'none';
+  document.getElementById('gen-btn-master').style.display = 'inline-block';
+  document.getElementById('gen-btn-account').style.display = 'inline-block';
+  if(countdownInterval) clearInterval(countdownInterval);
+  keyActive = false;
+}
+
+function copyKey(){
+  if(!window._currentKey) return;
+  navigator.clipboard.writeText(window._currentKey).then(function(){
+    const fb = document.getElementById('copy-fb');
+    fb.classList.add('show');
+    setTimeout(()=>fb.classList.remove('show'), 1500);
+  });
+}
+
+const ACTIVATION_DELAY_MS = 24 * 60 * 60 * 1000;
+const VALIDITY_MS = 365 * 24 * 60 * 60 * 1000;
+
+function startActivation(){
+  const now = Date.now();
+  activationTimestamp = now + ACTIVATION_DELAY_MS;
+  expiryTimestamp = null;
+  keyActive = false;
+
+  document.getElementById('status-block').style.display = 'flex';
+  document.getElementById('status-pill').textContent = 'Pending activation';
+  document.getElementById('status-pill').className = 'pill pending';
+  document.getElementById('status-sub').textContent = 'Activates 24 hours after generation, then valid for 365 days.';
+
+  const circumference = 2 * Math.PI * 31;
+  document.getElementById('ring-fg').setAttribute('stroke-dasharray', circumference);
+  document.getElementById('ring-fg').classList.remove('active');
+  document.getElementById('ring-label').classList.remove('active');
+
+  if(countdownInterval) clearInterval(countdownInterval);
+  updateStatus(circumference);
+  countdownInterval = setInterval(()=>updateStatus(circumference), 1000);
+}
+
+function updateStatus(circumference){
+  const now = Date.now();
+  if(!keyActive){
+    const remaining = activationTimestamp - now;
+    if(remaining <= 0){
+      keyActive = true;
+      expiryTimestamp = now + VALIDITY_MS;
+      document.getElementById('status-pill').textContent = 'Active';
+      document.getElementById('status-pill').className = 'pill active';
+      document.getElementById('status-sub').textContent = 'Valid for 365 days from activation.';
+      document.getElementById('ring-fg').classList.add('active');
+      document.getElementById('ring-label').classList.add('active');
+      return;
+    }
+    const hrs = Math.floor(remaining / (1000*60*60));
+    const mins = Math.floor((remaining % (1000*60*60)) / (1000*60));
+    const secs = Math.floor((remaining % (1000*60)) / 1000);
+    document.getElementById('ring-label').textContent = hrs + 'h';
+    document.getElementById('countdown-text').textContent = hrs + 'h ' + mins + 'm ' + secs + 's until activation';
+    const fraction = remaining / ACTIVATION_DELAY_MS;
+    document.getElementById('ring-fg').style.strokeDashoffset = circumference * fraction;
+  } else {
+    const remaining = expiryTimestamp - now;
+    if(remaining <= 0){
+      document.getElementById('countdown-text').textContent = 'Key expired';
+      document.getElementById('ring-label').textContent = '0d';
+      document.getElementById('ring-fg').style.strokeDashoffset = circumference;
+      clearInterval(countdownInterval);
+      return;
+    }
+    const daysLeft = remaining / (1000*60*60*24);
+    const wholeDays = Math.floor(daysLeft);
+    const hrs = Math.floor((remaining % (1000*60*60*24)) / (1000*60*60));
+    const mins = Math.floor((remaining % (1000*60*60)) / (1000*60));
+    const secs = Math.floor((remaining % (1000*60)) / 1000);
+    document.getElementById('ring-label').textContent = wholeDays + 'd';
+    document.getElementById('countdown-text').textContent = wholeDays + 'd ' + hrs + 'h ' + mins + 'm ' + secs + 's remaining';
+    const fraction = daysLeft / 365;
+    document.getElementById('ring-fg').style.strokeDashoffset = circumference * (1 - fraction);
+  }
+}
+</script>
+
+</body>
+</html>
