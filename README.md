@@ -31,10 +31,6 @@ git clone https://github.com/ayekarinfotech/hmacicici.git
 
 3. Launch `index.html` in your browser.
 
-## Live Website
-
-https://hmacicici.dpdns.org
-
 ## Deployment
 
 This project is hosted using **GitHub Pages** with a custom domain.
